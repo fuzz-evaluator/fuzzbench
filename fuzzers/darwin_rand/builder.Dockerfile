@@ -15,7 +15,7 @@
 ARG parent_image
 FROM $parent_image
 
-ADD darwin-rand.patch
+ADD darwin-rand.patch /darwin-rand.patch
 
 # Download and compile DARWIN, then apply the patch for darwin-rand.
 # Set AFL_NO_X86 to skip flaky tests.
@@ -23,7 +23,7 @@ RUN git clone \
         --depth 1 \
         https://github.com/TUDA-SSL/DARWIN/ /afl && \
     cd /afl && \
-    git apply darwin-rand.patch && \
+    git apply /darwin-rand.patch && \
     CFLAGS= CXXFLAGS= AFL_NO_X86=1 make
 
 # Use afl_driver.cpp from LLVM as our fuzzing library.

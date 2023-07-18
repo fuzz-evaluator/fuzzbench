@@ -155,10 +155,10 @@ index 1341818..cfa4072 100644
    SAYF(CURSOR_SHOW cLRD "\n\n+++ Testing aborted %s +++\n" cRST,
         stop_soon == 2 ? "programmatically" : "by user");
 diff --git a/afl_darwin.c b/afl_darwin.c
-index 15a5c46..57251f9 100644
+index 15a5c46..3910201 100644
 --- a/afl_darwin.c
 +++ b/afl_darwin.c
-@@ -3,229 +3,80 @@
+@@ -3,229 +3,76 @@
  #include <stdio.h>
  
  unsigned kAflNumMutationOperators;
@@ -170,19 +170,20 @@ index 15a5c46..57251f9 100644
 -	#define VALUE_TYPE double
 -#else
 -	#define VALUE_TYPE bool
--#endif
--
++#ifndef MUTATION_LOGGING
++  #define MUTATION_LOGGING 0
+ #endif
+ 
 -#ifndef _nParents
 -#define _nParents 5u
--#endif
-+#define MUTATION_LOGGING 0
- 
--#ifndef _lambda
--#define _lambda 4u
 +#if MUTATION_LOGGING == 1
 +FILE *mutation_log;
  #endif
  
+-#ifndef _lambda
+-#define _lambda 4u
+-#endif
+-
 -unsigned int *_nextToEvaluate;  // next child to evaluate
 -unsigned int *_currentParent;   // current parent being mutated
 -unsigned int *_bestSoFar;       // best so far parent
@@ -317,10 +318,7 @@ index 15a5c46..57251f9 100644
 -	while(cumulative[chosen] < randVal)
 -		chosen++;
 -	return chosen;
-+    if (mutations_since_reweight >= MUTATIONS_BEFORE_REWEIGHT) {
-+#if MUTATION_LOGGING == 1
-+        fprintf(mutation_log, "Reweights: ");
- #else
+-#else
 -	// baseline:
 -	bool *v = (bool *) _currentRelativeProb[seed];
 -
@@ -333,7 +331,9 @@ index 15a5c46..57251f9 100644
 -		operatorId = (operatorId + 1) % kAflNumMutationOperators;
 -	}
 -    	return operatorId;
-+        printf("Reweights: ");
++    if (mutations_since_reweight >= MUTATIONS_BEFORE_REWEIGHT) {
++#if MUTATION_LOGGING == 1
++        fprintf(mutation_log, "Reweights: ");
  #endif
 -}
 -
@@ -407,8 +407,6 @@ index 15a5c46..57251f9 100644
 +            }
 +#if MUTATION_LOGGING == 1
 +            fprintf(mutation_log, "(%ld, %d), ", i, weight);
-+#else
-+            printf("(%ld, %d), ", i, weight);
  #endif
 -	}
 -}
@@ -432,8 +430,6 @@ index 15a5c46..57251f9 100644
 +        }
 +#if MUTATION_LOGGING == 1
 +        fprintf(mutation_log, "sum: %d\n", weight_sum);
-+#else
-+        printf("sum: %d\n", weight_sum);
 +#endif
 +    } else {
 +        mutations_since_reweight += 1;
